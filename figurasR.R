@@ -29,6 +29,27 @@ ci.prop <- function(sample, a) {
   intervalo_confianza <- c(p - margen_error, p + margen_error)
 }
 
+# FIGURA 1
+
+valores_error_absoluto <- seq(0.1, 0.01, by = -0.01)
+
+# Calcular el tamaño de muestra necesario
+n_muestra <- sapply(valores_error_absoluto, function(e) p.size(0.5, 0.05, e))
+
+# Crear el dataframe con los valores en orden decreciente
+data_plot1 <- data.frame(error_absoluto = valores_error_absoluto, n_muestra = n_muestra)
+
+# Crear el gráfico
+ggplot(data_plot1, aes(x = error_absoluto, y = n_muestra)) +
+  geom_line() +
+  geom_point(color = "red") +
+  geom_text(aes(label = n_muestra), vjust = -0.5, color = "blue") +
+  scale_x_continuous(breaks = valores_error_absoluto, labels = valores_error_absoluto) +
+  coord_cartesian(xlim = c(0.1, 0.01)) + # Establece los límites para el eje X dentro del rango de datos
+  theme_minimal() +
+  xlab("Error Absoluto") +
+  ylab("Tamaño de Muestra Requerido")
+
 # POBLACION CONCUERDA CON EL P DEFINIDO EN EL CALCULO DE TAMAÑO MUESTRAL
 set.seed(123)
 error1 <- 0.5
@@ -79,14 +100,14 @@ prop.table(table(resultados$prop_ea))
 # REPETIMOS EL EXPERIMENTO 10.000 VECES CAMBIANDO EL VALOR DE LA PROPORCIÓN
 set.seed(1234)
 n_simulaciones <- 10000
-p_values <- seq(0.1, 0.9, by = 0.1)
+props <- seq(0.01, 0.9, by = 0.01)
 error_absoluto <- 0.05
 alfa <- 0.05
-n_muestra <- sapply(p_values, function(p) p.size(p, alfa, error_absoluto))
-proporciones_excedidas <- numeric(length(p_values))
+n_muestra <- sapply(props, function(p) p.size(props, alfa, error_absoluto))
+proporciones_excedidas <- numeric(length(props))
 
-for (i in 1:length(p_values)) {
-  p_real <- p[i]
+for (i in 1:length(props)) {
+  p_real <- props[i]
   size_muestra <- p.size(p_real, alfa, error_absoluto)
   poblacion <- rbinom(100000, 1, p_real)
   
@@ -106,16 +127,24 @@ for (i in 1:length(p_values)) {
   proporciones_excedidas[i] <- excedidas / n_simulaciones
 }
 
-data_plot <- data.frame(p_real = p, proporciones_excedidas = proporciones_excedidas)
-
+data_plot <- data.frame(p_real = props, proporciones_excedidas = proporciones_excedidas, n_muestra = n_muestra)
 data_plot$n_muestra <- n_muestra
 
-# Crear el gráfico
+# FIGURA 2
 ggplot(data_plot, aes(x = p_real, y = proporciones_excedidas)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = n_muestra), vjust = -0.5) +
+  geom_line() + # Usa geom_line() para conectar los puntos con líneas
   theme_minimal() +
-  scale_x_continuous(breaks = seq(0.1, 0.9, by = 0.1)) +
+  scale_y_continuous(limits = c(0, 0.6), breaks = seq(0, 0.6, by = 0.1)) + # Ajusta según tus datos
+  scale_x_continuous(limits = c(0,1), breaks = seq(0,1, by = 0.1)) +
+  xlab("Proporción Real") +
+  ylab("Proporción de Intervalos que Exceden el Doble del Error Absoluto")
+
+
+# FIGURA 3
+ggplot(data_plot, aes(x = n_muestra, y = proporciones_excedidas)) +
+  geom_line() + # Usa geom_line() para conectar los puntos con líneas
+  theme_minimal() +
   scale_y_continuous(limits = c(0, 0.6), breaks = seq(0, 0.6, by = 0.1)) +
-  xlab("Proporción Estimada") +
+  scale_x_continuous(limits = c(0,400), breaks = seq(0,400, by = 50)) +
+  xlab("Tamaño de Muestra") +
   ylab("Proporción de Intervalos que Exceden el Doble del Error Absoluto")

@@ -128,7 +128,7 @@ for (i in 1:length(props)) {
 }
 
 data_plot <- data.frame(p_real = props, proporciones_excedidas = proporciones_excedidas, n_muestra = n_muestra)
-data_plot$n_muestra <- n_muestra
+data_plot$n_muestra <- data_plot$n_muestra[, 1]
 
 # FIGURA 2
 ggplot(data_plot, aes(x = p_real, y = proporciones_excedidas)) +
@@ -145,6 +145,6 @@ ggplot(data_plot, aes(x = n_muestra, y = proporciones_excedidas)) +
   geom_line() + # Usa geom_line() para conectar los puntos con líneas
   theme_minimal() +
   scale_y_continuous(limits = c(0, 0.6), breaks = seq(0, 0.6, by = 0.1)) +
-  scale_x_continuous(limits = c(0,400), breaks = seq(0,400, by = 50)) +
+  scale_x_continuous(limits = c(0, 400), breaks = seq(0, 400, by = 50)) +
   xlab("Tamaño de Muestra") +
   ylab("Proporción de Intervalos que Exceden el Doble del Error Absoluto")
